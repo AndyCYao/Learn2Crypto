@@ -13,11 +13,16 @@ var args = process.argv
 switch(args[2]){
 
   case 'deposit':
-    amount = parseFloat(args[3])
-    var payload = {cmd: 'deposit', amount: amount}
+    value = parseFloat(args[3])
+    var payload = {cmd: 'deposit', amount: value}
   break 
   case 'balance':
     var payload = {cmd: 'balance'}
+  
+  break
+  case 'withdraw':
+    value = parseFloat(args[3])
+    var payload = {cmd: 'withdraw', amount: value}
   default:
   break
 }
