@@ -4,15 +4,7 @@ var jsonStream = require('duplex-json-stream')
 var net = require('net')
 
 const fs = require('fs');
-// var log = []
-// fs.open('transactions.json', 'r', (err, fd) => {
-//   if (err) throw err;
-//   fs.close(fd, (err) => {
-//     if (err) throw err;
-//   });
 
-//   log = fd
-// });
 var log = require('./transactions.json');
 console.log(typeof(log))
 console.log(log)
@@ -32,10 +24,10 @@ var server = net.createServer(function (socket) {
       case 'deposit':
         currentBalance += msg.amount
         log.push(msg)
-        // var payload = {cmd : 'balance', balance : log.reduce(reduceLog, 0)}
+
         break
       case 'balance':
-        // var payload = {cmd : 'balance', balance : log.reduce(reduceLog, 0)}
+
         break
       case 'withdraw':
         if(currentBalance >= msg.amount){
