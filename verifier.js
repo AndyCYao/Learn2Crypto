@@ -20,9 +20,60 @@ function verifyHashChain (log){
     return true
 }
 
-
-function verifyHashChainReducer(hash, entry){
-    
+function hasher(prevHash, value){
+    console.log(prevHash.toString('hex'))
+    console.log(value)
+    var input = Buffer.from(prevHash + JSON.stringify(value))
+    // var input = Buffer.from(prevHash + value)
+    var output = Buffer.alloc(sodium.crypto_generichash_BYTES)
+    sodium.crypto_generichash(output, input)
+    return output
 }
 
-console.log(verifyHashChain(log))
+function verifyHashChainReducer(hash, entry){
+    console.log('hash is ' + hash.toString('hex'))
+    // console.log( 'entry hash is ' + entry.hash.toString('hex'))
+    return hasher(hash, entry.value)
+}
+
+// console.log(verifyHashChain(log))
+
+var genesisHash = Buffer.alloc(32).toString('hex')
+// var currentHash = log.reduce(verifyHashChainReducer, genesisHash )
+// console.log(currentHash.toString('hex'))
+
+var result = hasher(genesisHash, 
+    log[0].value
+ )
+
+var result1 = hasher(result, 
+   log[1].value
+)
+
+var result2 = hasher('2c178aa030633cf113b357dcbe68de8a597edcbc30d6799216753163676fc72b', 
+    {
+    "cmd": "withdraw",
+    "amount": -100
+   }
+)
+
+// console.log(result.toString('hex'))
+// console.log(result1.toString('hex'))
+// console.log(result2.toString('hex'))
+
+var temp = {
+    "cmd": "withdraw",
+    "amount": -100
+   }
+
+console.log(log[1].value ===  {
+    "cmd": "withdraw",
+    "amount": -100
+   } )
+
+console.log(Object.prototype.toString.call(log[1].value))
+
+console.log(Object.prototype.toString.call({
+    "cmd": "withdraw",
+    "amount": -100
+   }))

@@ -6,7 +6,7 @@ var buf1 = Buffer.from("Hello, World!")
 console.log('Original Buf1')
 console.log(buf1.toString('hex'))
 
-var buf2 = Buffer.alloc(sodium.crypto_generichash_BYTES_MIN) 
+var buf2 = Buffer.alloc(sodium.crypto_generichash_BYTES) 
 // why is this wrong but sodium.crypto_generichash_BYTES works
 
 console.log('Original Buf2')
