@@ -1,2 +1,4 @@
 
 node_modules/
+transactions.json
+package-lock.json
