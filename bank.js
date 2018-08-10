@@ -10,12 +10,18 @@ const fs = require('fs');
 var log = require('./transactions.json');
 // console.log(typeof(log))
 // console.log(log)
+function verify (log){
+  
+}
+
 
 var currentBalance = log.reduce(reducer, 0)
 
 function reducer (balance, entry) {
   return balance + entry.value.amount
 }
+
+
 
 // One edge-case with referring to the previous hash is that you need a
 // "genesis" hash for the first entry in the log
