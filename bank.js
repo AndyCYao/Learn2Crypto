@@ -18,8 +18,8 @@ function hasher(prevHash, value){
 }
 
 function verifyHashChainReducer(hash, item){
-  var returned = hasher(hash, item.value)
-  return returned.toString('hex')
+  var output = hasher(hash, item.value)
+  return output.toString('hex')
 }
 
 function isVerified(log){
@@ -27,9 +27,7 @@ function isVerified(log){
     var currentHash = log.reduce(verifyHashChainReducer, genesisHash)
     return currentHash == log[log.length - 1].hash
   }
-  else{
-    return true
-  }
+  else{return true}
 }
 
 function reducer (balance, entry) {
@@ -47,49 +45,44 @@ function appendToTransactionLog (entry) {
   })
 }
 
-var server = net.createServer(function (socket) {
-  socket = jsonStream(socket)
-  
-  socket.on('data', function (msg) {
-    
-    if(!isVerified(log)) {
-      var payload = "error, bank has corrupted data"
-      socket.write(payload)
-      return
-    }
-
-    isSufficient = true
-    switch(msg["cmd"]){
-      case 'deposit':
-        currentBalance += msg.amount
-        appendToTransactionLog(msg)
-
-        break
-      case 'balance':
-
-        break
-      case 'withdraw':
-        if(currentBalance >= msg.amount){
-          currentBalance -= msg.amount
-          msg.amount = -1 * msg.amount
+if(isVerified(log)) {
+  var server = net.createServer(function (socket) {
+    socket = jsonStream(socket)
+    socket.on('data', function (msg) {
+      isSufficient = true
+      switch(msg["cmd"]){
+        case 'deposit':
+          currentBalance += msg.amount
           appendToTransactionLog(msg)
-        }
-        else{
-          isSufficient = false
-        }
-        break
-      default:
-        break
-    }
-    if(isSufficient){
-      var payload = {cmd : 'balance', balance : log.reduce(reducer, 0)}
-      fs.writeFile('transactions.json', JSON.stringify(log, null, 1), (error) => { /* handle error */ })
-    } 
-    else{
-      var payload = "Insufficient fund"
-    }
-    socket.write(payload)
+          break
+          case 'withdraw':
+          if(currentBalance >= msg.amount){
+            currentBalance -= msg.amount
+            msg.amount = -1 * msg.amount
+            appendToTransactionLog(msg)
+          }
+          else{
+            isSufficient = false
+          }
+          break
+        case 'balance':
+          break
+        default:
+          break
+      }
+      if(isSufficient){
+        var payload = {cmd : 'balance', balance : log.reduce(reducer, 0)}
+        fs.writeFile('transactions.json', JSON.stringify(log, null, 1), (error) => { /* handle error */ })
+      } 
+      else{
+        var payload = "Insufficient fund"
+      }
+      socket.write(payload)
+    })
   })
-})
-
-server.listen(3876)
+  server.listen(3876)
+}
+else{
+  console.log("error, bank has corrupted data")
+  return 
+}
