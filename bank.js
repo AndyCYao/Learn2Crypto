@@ -1,3 +1,4 @@
+
 // bank.js
 
 var jsonStream = require('duplex-json-stream')
@@ -83,6 +84,6 @@ if(isVerified(log)) {
   server.listen(3876)
 }
 else{
-  console.log("error, bank has corrupted data")
+  console.log("error, transactions.json has corrupted data")
   return 
 }
