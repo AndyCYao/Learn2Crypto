@@ -1,15 +1,15 @@
 const sodium   = require('sodium-native')
 
 module.exports = {
-    sign : function (message){
-        var publicKey     = Buffer.alloc(sodium.crypto_sign_PUBLICKEYBYTES)
-        var secretKey     = Buffer.alloc(sodium.crypto_sign_SECRETKEYBYTES)
+    sign : function (message, publicKey, secretKey){
+        // var publicKey     = Buffer.alloc(sodium.crypto_sign_PUBLICKEYBYTES)
+        // var secretKey     = Buffer.alloc(sodium.crypto_sign_SECRETKEYBYTES)
         var signature     = Buffer.alloc(sodium.crypto_sign_BYTES)
         var buf_message   = Buffer.from(message)
-        sodium.crypto_sign_keypair(publicKey, secretKey)
+        // sodium.crypto_sign_keypair(publicKey, secretKey)
     
         sodium.crypto_sign_detached(signature, buf_message, secretKey)
-        return [signature, publicKey, buf_message]
+        return [signature, buf_message]
     }
 }
 

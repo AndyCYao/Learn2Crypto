@@ -7,9 +7,28 @@ var net        = require('net')
 const fs       = require('fs');
 var log        = require('./transactions.json');
 
+var sign       = require('./sign.js')
+var verify     = require('./verify.js')
+
 // One edge-case with referring to the previous hash is that you need a
 // "genesis" hash for the first entry in the log
 var genesisHash = Buffer.alloc(32).toString('hex')
+
+// Check if existing key-pair is stored on disk, if so load it
+var keyPair   = require('./keys.json')
+var secretKey, publicKey
+if (Object.keys(keyPair).length > 0){
+  secretKey = keyPair.secretKey; publicKey = keyPair.publicKey
+}
+else{
+  publicKey     = Buffer.alloc(sodium.crypto_sign_PUBLICKEYBYTES)
+  secretKey     = Buffer.alloc(sodium.crypto_sign_SECRETKEYBYTES)
+  sodium.crypto_sign_keypair(publicKey, secretKey)
+  var keys = {"secretKey" : secretKey.toString('hex'), 
+              "publicKey" : publicKey.toString('hex')
+             }
+  fs.writeFile('keys.json', JSON.stringify(keys, null, 1), (error) => { /* handle error */ })
+}
 
 function hasher(prevHash, value){
   var input  = Buffer.from(prevHash + JSON.stringify(value))
@@ -40,6 +59,7 @@ var currentBalance = log.reduce(reducer, 0)
 function appendToTransactionLog (entry) {
   var prevHash = log.length ? log[log.length - 1].hash : genesisHash
   var currentHash = hasher(prevHash , entry)
+
   log.push({
     value: entry,
     hash: currentHash.toString('hex')
