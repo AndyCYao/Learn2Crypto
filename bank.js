@@ -44,10 +44,16 @@ function verifyHashChainReducer(hash, item){
 
 function isVerified(log){
   if(log.length > 0){
-    var currentHash = log.reduce(verifyHashChainReducer, genesisHash)
-    return currentHash == log[log.length - 1].hash
+    for(var i = 0; i < log.length ; i++){
+      if(!verify.verify(log[i].signature, publicKey, log[i].hash)){
+        console.log("transaction " + i + " is unverified")
+        return false
+      }
+    }
+    var currentHash = log.reduce(verifyHashChainReducer, genesisHash);
+    return currentHash == log[log.length - 1].hash 
   }
-  else{return true}
+  return true
 }
 
 function reducer (balance, entry) {
@@ -58,11 +64,12 @@ var currentBalance = log.reduce(reducer, 0)
 
 function appendToTransactionLog (entry) {
   var prevHash = log.length ? log[log.length - 1].hash : genesisHash
-  var currentHash = hasher(prevHash , entry)
-
+  var currentHash = hasher(prevHash , entry).toString('hex')
+  
   log.push({
     value: entry,
-    hash: currentHash.toString('hex')
+    hash: currentHash,
+    signature: sign.sign(currentHash, secretKey).toString('hex')
   })
 }
 
