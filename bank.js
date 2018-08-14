@@ -87,14 +87,20 @@ function appendToTransactionLog (entry) {
   })
 }
 
+
 if(isVerified(log)) {
   var server = net.createServer(function (socket) {
     socket = jsonStream(socket)
     socket.on('data', function (msg) {
-      console.log(log)
-      var currentBalance = log.reduce(reducer, 0) // here need to take in the id in the reduce
+      console.log("*** incoming message \n" + JSON.stringify(msg,null, 1))
+      var customerLog    = log.filter(val => {
+        return val.value.customerId == msg.customerId
+      }) 
+      console.log("*** customer log message \n" + JSON.stringify(customerLog, null, 1))
+
+      var currentBalance = customerLog.reduce(reducer, 0) // here need to take in the id in the reduce
       isSufficient = true
-      switch(msg["cmd"]){
+      switch(msg.cmd){
         case 'deposit':
           currentBalance += msg.amount
           appendToTransactionLog(msg)
@@ -115,7 +121,8 @@ if(isVerified(log)) {
           break
       }
       if(isSufficient){
-        var payload = {cmd : 'balance', balance : log.reduce(reducer, 0)}
+        // var payload = {cmd : 'balance', balance : log.reduce(reducer, 0)}
+        var payload = {cmd : 'balance', balance : currentBalance}
         nonce   = Buffer.alloc(sodium.crypto_secretbox_NONCEBYTES)
         sodium.randombytes_buf(nonce)
         cipher = encrypt.encrypt(log, encryptionKey, nonce)
@@ -130,6 +137,7 @@ if(isVerified(log)) {
         var payload = "Insufficient fund"
       }
       socket.write(payload)
+      console.log("**** Current Log\n" + JSON.stringify(log,null,1 ))
     })
   })
   server.listen(3876)
