@@ -21,11 +21,11 @@ if (Object.keys(keyPair).length > 0){
   secretKey = keyPair.secretKey 
   publicKey = keyPair.publicKey
   encryptionKey = Buffer.from(keyPair.encryptionKey, 'hex')
-
   var cipher = Buffer.from(transactions.cipher,'hex')
   var nonce  = Buffer.from(transactions.nonce, 'hex')
-  var plainText = decrypt.decrypt(nonce, encryptionKey,cipher)
-  log = JSON.parse(plainText.toString())
+  var results = decrypt.decrypt(nonce, encryptionKey,cipher)
+  if (!results[0]){ console.error("error decrypting transactions")}
+  log = JSON.parse(results[1].toString())
 }
 else{
   publicKey     = Buffer.alloc(sodium.crypto_sign_PUBLICKEYBYTES)
@@ -33,6 +33,7 @@ else{
   sodium.crypto_sign_keypair(publicKey, secretKey)
   // nonce         = Buffer.alloc(sodium.crypto_secretbox_NONCEBYTES)
   encryptionKey = Buffer.alloc(sodium.crypto_secretbox_KEYBYTES)
+  sodium.randombytes_buf(encryptionKey)
   var keys = {"secretKey" : secretKey.toString('hex'), 
               "publicKey" : publicKey.toString('hex'),
               "encryptionKey": encryptionKey.toString('hex')
@@ -73,7 +74,6 @@ function isVerified(log){
 function reducer (balance, entry) {
   return balance + entry.value.amount
 }
-var currentBalance = log.reduce(reducer, 0)
 
 
 function appendToTransactionLog (entry) {
@@ -91,13 +91,15 @@ if(isVerified(log)) {
   var server = net.createServer(function (socket) {
     socket = jsonStream(socket)
     socket.on('data', function (msg) {
+      console.log(log)
+      var currentBalance = log.reduce(reducer, 0) // here need to take in the id in the reduce
       isSufficient = true
       switch(msg["cmd"]){
         case 'deposit':
           currentBalance += msg.amount
           appendToTransactionLog(msg)
           break
-          case 'withdraw':
+        case 'withdraw':
           if(currentBalance >= msg.amount){
             currentBalance -= msg.amount
             msg.amount = -1 * msg.amount
@@ -133,6 +135,6 @@ if(isVerified(log)) {
   server.listen(3876)
 }
 else{
-  console.log("error, transactions.json has corrupted data")
+  console.log("error, the log has corrupted data")
   return 
 }
