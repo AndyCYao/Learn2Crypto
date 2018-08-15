@@ -101,6 +101,8 @@ if(isVerified(log)) {
       var currentBalance = customerLog.reduce(reducer, 0) // here need to take in the id in the reduce
       isSufficient = true
       switch(msg.cmd){
+        case 'register':
+          // save the keypair
         case 'deposit':
           currentBalance += msg.amount
           appendToTransactionLog(msg)
